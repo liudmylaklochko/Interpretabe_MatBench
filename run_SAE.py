@@ -1,8 +1,9 @@
 #%%
-import torch, sys, json
+import torch, json
 import SAE.sparce_autoencoder as SAE
 torch.backends.cudnn.enabled=False
 import pandas as pd
+import utils_f as  u 
 
 def trainSAE(SAEs, optimizers, layer, acts, SAEevs):
     if layer not in SAEs:
@@ -75,3 +76,14 @@ for ep in range(1, config["nepochs_sae"]+1):
         SAEev[layer]["sparse"] /= count
         SAEev[layer]["loss"] /= count
         print(f"   {layer}:: rec={SAEev[layer]['rec']}, sparse={SAEev[layer]['sparse']}, loss={SAEev[layer]['loss']}")
+
+
+
+print("********  Visualize neuron activity of SAE  ********")
+
+layer = possible_layers.layers[0]
+decoded_final, encoded_final = SAEs[layer](torch.stack(batch[layer], dim=0).to(device))
+u.check_neuron(torch.stack(batch[layer], dim=0).to(device).cpu(),decoded_final.detach().cpu(),neuron_index=1)
+u.visualize_neuron_activity_all(encoded_final.detach().cpu(), display_count=12, row_length=4)
+
+
