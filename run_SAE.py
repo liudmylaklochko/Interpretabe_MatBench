@@ -52,8 +52,7 @@ print("********  Loading activations  ********")
 batch = torch.load('../activations_MEGNet/activations.pt')
 possible_layers = pd.read_csv('../activations_MEGNet/non_empty_layers.txt')
 
-#layer = possible_layers.layers[1]
-#print ("Train will be done for :",layer)
+
 
 print("********  Training SAE  ********")
 
