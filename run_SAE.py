@@ -65,7 +65,7 @@ optimizers = {}
 for ep in range(1, config["nepochs_sae"]+1):
     count = 0
     sev = 0
-    # for X,y in data_loader:
+
     for layer in possible_layers.layers:
         trainSAE(SAEs, optimizers, layer, torch.stack(batch[layer], dim=0).to(device), SAEev)
         count = len (batch[layer])
