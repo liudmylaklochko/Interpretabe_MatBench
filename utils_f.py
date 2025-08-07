@@ -63,6 +63,18 @@ def visualize_neuron_activity_all(activation_data, display_count=50, row_length=
         plt.show()
 
     
+def plot_losses(tl,rc, sl):
 
+    plt.figure(figsize=(10, 5))
+    plt.plot(tl.index, tl.values, label='total Loss', color='blue')
+    plt.plot(rc.index, rc.values, label='reconstr Loss', color='red')
+    plt.plot(sl.index, sl.values, label='sparse Loss', color='green')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title('Training Loss over Epochs')
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
 
 #check_neuron(torch.stack(batch[layer], dim=0).to(device).cpu(),decoded_final.detach().cpu(),neuron_index=1)
