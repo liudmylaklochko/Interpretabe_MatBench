@@ -41,6 +41,6 @@ for layer in possible_layers.layers:
     encoded_outputs[layer] = activation[layer]    
 
 
-torch.save({'activations': batch, 'mp_ids': batch_mp_ids}, 'activations_SAE.pt')
+torch.save({'activations': encoded_outputs, 'mp_ids': batch_mp_ids}, 'activations_SAE.pt')
 
 
