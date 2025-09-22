@@ -4,6 +4,10 @@ import SAE.sparce_autoencoder as SAE
 torch.backends.cudnn.enabled=False
 import pandas as pd
 import utils_f as  u 
+import sys 
+
+model_name = sys.argv[1]
+
 
 def trainSAE(SAEs, optimizers, layer, acts, SAEev):
     if layer not in SAEs:
@@ -40,7 +44,8 @@ def trainSAE(SAEs, optimizers, layer, acts, SAEev):
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 if device == torch.device("cuda"): print("USING GPU")
 
-config = json.load(open("configurations/config_MegNet.json"))
+
+config = json.load(open(f"configurations/config_{model_name}.json"))
 
 torchseed = config['seed'] 
 torch.manual_seed(torchseed)
@@ -49,10 +54,9 @@ torch.cuda.manual_seed(torchseed)
 
 print("********  Loading activations  ********")
 
-#batch = torch.load('../activations_MEGNet/activations.pt')
-data = torch.load('../activations_MEGNet/activations.pt')
-batch = data['activations']
-possible_layers = pd.read_csv('../activations_MEGNet/non_empty_layers.txt')
+data = torch.load(f'../activations_{model_name}/activations.pt')
+batch = data#['activations']
+possible_layers = pd.read_csv(f'../activations_{model_name}/non_empty_layers.txt')
 
 
 
@@ -83,7 +87,10 @@ for ep in range(0, config["nepochs_sae"]+1):
     sp = {} 
 
     for layer in possible_layers.layers:
-        trainSAE(SAEs, optimizers, layer, torch.stack(batch[layer], dim=0).to(device), SAEev)
+        
+        #trainSAE(SAEs, optimizers, layer, torch.stack(batch[layer], dim=0).to(device), SAEev)
+        trainSAE(SAEs, optimizers, layer, batch[layer].to(device), SAEev)
+        
         count = len (batch[layer])
 
         tl[layer] = SAEev[layer]['loss'].detach().cpu().item()
@@ -107,23 +114,26 @@ print("********  Visualize neuron activity of SAE  ********")
 
 
 # load trained SAE
-""" config = json.load(open("configurations/config_MegNet.json"))
+""" config = json.load(open(f"configurations/config_{model_name}.json"))
 SAEs = {}
 SAEev = {}
 optimizers = {}
-possible_layers = pd.read_csv('../activations_MEGNet/non_empty_layers.txt')
+possible_layers = pd.read_csv(f'../activations_{model_name}/non_empty_layers.txt')
 for layer in possible_layers.layers:
     SAEs[layer] = torch.load(f"{config['saedir']}/{layer}.pkl")
-data = torch.load('../activations_MEGNet/activations.pt')
+data = torch.load(f'../activations_{model_name}/activations.pt')
 batch = data['activations']
 mpd_ids = data['mpd_ids']  
  """
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+layer = possible_layers.layers[5]
 
+#decoded_final, encoded_final = SAEs[layer](torch.stack(batch[layer], dim=0).to(device))
+#u.check_neuron(torch.stack(batch[layer], dim=0).to(device).cpu(),decoded_final.detach().cpu(),neuron_index=5)
 
-layer = possible_layers.layers[128]
-decoded_final, encoded_final = SAEs[layer](torch.stack(batch[layer], dim=0).to(device))
-u.check_neuron(torch.stack(batch[layer], dim=0).to(device).cpu(),decoded_final.detach().cpu(),neuron_index=5)
+decoded_final, encoded_final = SAEs[layer](batch[layer].to(device))
+u.check_neuron(batch[layer].to(device).cpu(),decoded_final.detach().cpu(),neuron_index=5)
+
 u.visualize_neuron_activity_all(encoded_final.detach().cpu(), display_count=12, row_length=4)
 u.plot_losses(tl_ep[layer],rc_ep[layer], sp_ep[layer])
 

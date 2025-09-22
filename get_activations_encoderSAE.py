@@ -12,10 +12,11 @@ def get_activation(name):
     return hook
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model_name='ALIGNN'
 
-data = torch.load('../activations_MEGNet/activations.pt')
-config = json.load(open("configurations/config_MegNet.json"))
-possible_layers = pd.read_csv('../activations_MEGNet/non_empty_layers.txt')
+data = torch.load(f'../activations_{model_name}/activations.pt')
+config = json.load(open(f"configurations/config_{model_name}.json"))
+possible_layers = pd.read_csv(f'../activations_{model_name}/non_empty_layers.txt')
 
 
 batch = data['activations']
@@ -41,6 +42,6 @@ for layer in possible_layers.layers:
     encoded_outputs[layer] = activation[layer]    
 
 
-torch.save({'activations': encoded_outputs, 'mp_ids': batch_mp_ids}, 'activations_SAE.pt')
+torch.save({'activations': encoded_outputs, 'mp_ids': batch_mp_ids}, f'activations_SAE_{model_name}.pt')
 
 
