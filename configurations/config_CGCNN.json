@@ -1,0 +1,14 @@
+{   
+    "framework": "PyTorch",
+    "seed": 42,	
+    
+    "saedir": "trained_saes/CGCNN",
+    "nepochs_sae": 5000,
+    "basefactor": 3, 
+    "maxsize": 100000000, 
+    "beta": 0.01, 
+    "rho": 0.001, 
+    "learningrate": 0.01
+
+
+}

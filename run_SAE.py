@@ -5,6 +5,8 @@ torch.backends.cudnn.enabled=False
 import pandas as pd
 import utils_f as  u 
 import sys 
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning, message=".*torch.load.*")
 
 model_name = sys.argv[1]
 
@@ -88,8 +90,8 @@ for ep in range(0, config["nepochs_sae"]+1):
 
     for layer in possible_layers.layers:
         
-        #trainSAE(SAEs, optimizers, layer, torch.stack(batch[layer], dim=0).to(device), SAEev)
-        trainSAE(SAEs, optimizers, layer, batch[layer].to(device), SAEev)
+        trainSAE(SAEs, optimizers, layer, torch.stack(batch[layer], dim=0).to(device), SAEev)
+        #trainSAE(SAEs, optimizers, layer, batch[layer].to(device), SAEev)
         
         count = len (batch[layer])
 
@@ -108,31 +110,89 @@ for ep in range(0, config["nepochs_sae"]+1):
         SAEev[layer]["loss"] /= count
         print(f"   {layer}:: rec={SAEev[layer]['rec']}, sparse={SAEev[layer]['sparse']}, loss={SAEev[layer]['loss']}")
 
-
+tl_ep.to_csv(f'tl_ep_{model_name}.csv')    
+rc_ep.to_csv(f'rc_ep_{model_name}.csv')   
+sp_ep.to_csv(f'sp_ep_{model_name}.csv')   
 
 print("********  Visualize neuron activity of SAE  ********")
 
 
 # load trained SAE
-""" config = json.load(open(f"configurations/config_{model_name}.json"))
+""" #%%
+import torch, json
+import SAE.sparce_autoencoder as SAE
+torch.backends.cudnn.enabled=False
+import pandas as pd
+import utils_f as  u 
+import sys 
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning, message=".*torch.load.*")
+
+model_name = sys.argv[1]
+
+
+def trainSAE(SAEs, optimizers, layer, acts, SAEev):
+    if layer not in SAEs:
+        factor = config["basefactor"] 
+        while acts.size()[1]*acts.size()[1]*factor*4 > config["maxsize"]:
+            factor -= 1
+        if factor < 1: 
+            SAEs[layer] = None   
+            print(f"{layer} too large, skipping")
+        else:    
+            encoding_dim = int(acts.size()[1] * factor)
+            #print(f"Encoding dim for {layer} = {encoding_dim} (factor={factor})")
+            SAEs[layer] = SAE.SparseAutoencoder(acts.size()[1], 
+                                                encoding_dim, 
+                                                beta=config["beta"], 
+                                                rho=config["rho"]).to(device) 
+            SAEev[layer] = {"rec": 0, "sparse": 0, "loss": 0, "min": None}
+            optimizers[layer] = torch.optim.Adam(SAEs[layer].parameters(), 
+                                                 lr=config["learningrate"])
+            SAEs[layer].train()
+    if SAEs[layer] is None: return
+    optimizers[layer].zero_grad()
+    decoded, encoded = SAEs[layer](acts)
+    total_loss, recon_loss_val, sparsity_val = SAEs[layer].compute_loss(acts, decoded, encoded)  
+    total_loss.backward()
+    optimizers[layer].step()
+    SAEev[layer]["rec"] += recon_loss_val
+    SAEev[layer]["sparse"] += sparsity_val
+    SAEev[layer]["loss"] += total_loss
+model_name='CGCNN'
+
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+if device == torch.device("cuda"): print("USING GPU")
+
+
+config = json.load(open(f"configurations/config_{model_name}.json"))
+
+torchseed = config['seed'] 
+torch.manual_seed(torchseed)
+torch.cuda.manual_seed(torchseed)
+
+
+print("********  Loading activations  ********")
+
+data = torch.load(f'../activations_{model_name}/activations.pt')
+batch = data#['activations']
+possible_layers = pd.read_csv(f'../activations_{model_name}/non_empty_layers.txt')
+
 SAEs = {}
 SAEev = {}
 optimizers = {}
-possible_layers = pd.read_csv(f'../activations_{model_name}/non_empty_layers.txt')
 for layer in possible_layers.layers:
     SAEs[layer] = torch.load(f"{config['saedir']}/{layer}.pkl")
-data = torch.load(f'../activations_{model_name}/activations.pt')
-batch = data['activations']
-mpd_ids = data['mpd_ids']  
- """
+"""
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-layer = possible_layers.layers[5]
+layer = possible_layers.layers[0]
 
-#decoded_final, encoded_final = SAEs[layer](torch.stack(batch[layer], dim=0).to(device))
-#u.check_neuron(torch.stack(batch[layer], dim=0).to(device).cpu(),decoded_final.detach().cpu(),neuron_index=5)
+decoded_final, encoded_final = SAEs[layer](torch.stack(batch[layer], dim=0).to(device))
+u.check_neuron(torch.stack(batch[layer], dim=0).to(device).cpu(),decoded_final.detach().cpu(),neuron_index=5)
 
-decoded_final, encoded_final = SAEs[layer](batch[layer].to(device))
-u.check_neuron(batch[layer].to(device).cpu(),decoded_final.detach().cpu(),neuron_index=5)
+#decoded_final, encoded_final = SAEs[layer](batch[layer].to(device))
+#u.check_neuron(batch[layer].to(device).cpu(),decoded_final.detach().cpu(),neuron_index=15)
 
 u.visualize_neuron_activity_all(encoded_final.detach().cpu(), display_count=12, row_length=4)
 u.plot_losses(tl_ep[layer],rc_ep[layer], sp_ep[layer])
