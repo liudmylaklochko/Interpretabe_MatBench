@@ -38,11 +38,11 @@ def visualize_diagnostics(decoded):
     X axis : sampe, i.e. material 
     """
     decoded = decoded.detach().cpu().numpy()
-    fig = plt.figure(figsize=(12, 24))
+    fig = plt.figure(figsize=(24, 24))
     gs = fig.add_gridspec(3, 3, hspace=0.3, wspace=0.3)
     ax2 = fig.add_subplot(gs[0, 1])
     sns.heatmap(decoded.T, 
-                cmap='viridis', ax=ax2, cbar_kws={'label': 'Activation'})
+                cmap='viridis', ax=ax2, cbar_kws={'label': 'Decoded Activation'})
     ax2.set_xlabel('Sample')
     ax2.set_ylabel('Neuron')
     plt.show()
@@ -80,5 +80,5 @@ for layer in possible_layers.layers:
 
 layer = possible_layers.layers[0]
 decoded_final, encoded_final = SAEs[layer](torch.stack(batch[layer], dim=0).to(device))
-u.check_neuron(torch.stack(batch[layer], dim=0).to(device).cpu(),decoded_final.detach().cpu(),neuron_index=9)
+u.check_neuron(torch.stack(batch[layer], dim=0).to(device).cpu(),decoded_final.detach().cpu(),neuron_index=29)
 
