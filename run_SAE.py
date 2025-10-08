@@ -128,37 +128,6 @@ import sys
 import warnings
 warnings.filterwarnings("ignore", category=FutureWarning, message=".*torch.load.*")
 
-model_name = sys.argv[1]
-
-
-def trainSAE(SAEs, optimizers, layer, acts, SAEev):
-    if layer not in SAEs:
-        factor = config["basefactor"] 
-        while acts.size()[1]*acts.size()[1]*factor*4 > config["maxsize"]:
-            factor -= 1
-        if factor < 1: 
-            SAEs[layer] = None   
-            print(f"{layer} too large, skipping")
-        else:    
-            encoding_dim = int(acts.size()[1] * factor)
-            #print(f"Encoding dim for {layer} = {encoding_dim} (factor={factor})")
-            SAEs[layer] = SAE.SparseAutoencoder(acts.size()[1], 
-                                                encoding_dim, 
-                                                beta=config["beta"], 
-                                                rho=config["rho"]).to(device) 
-            SAEev[layer] = {"rec": 0, "sparse": 0, "loss": 0, "min": None}
-            optimizers[layer] = torch.optim.Adam(SAEs[layer].parameters(), 
-                                                 lr=config["learningrate"])
-            SAEs[layer].train()
-    if SAEs[layer] is None: return
-    optimizers[layer].zero_grad()
-    decoded, encoded = SAEs[layer](acts)
-    total_loss, recon_loss_val, sparsity_val = SAEs[layer].compute_loss(acts, decoded, encoded)  
-    total_loss.backward()
-    optimizers[layer].step()
-    SAEev[layer]["rec"] += recon_loss_val
-    SAEev[layer]["sparse"] += sparsity_val
-    SAEev[layer]["loss"] += total_loss
 model_name='CGCNN'
 
 
@@ -189,7 +158,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 layer = possible_layers.layers[0]
 
 decoded_final, encoded_final = SAEs[layer](torch.stack(batch[layer], dim=0).to(device))
-u.check_neuron(torch.stack(batch[layer], dim=0).to(device).cpu(),decoded_final.detach().cpu(),neuron_index=5)
+u.check_neuron(torch.stack(batch[layer], dim=0).to(device).cpu(),decoded_final.detach().cpu(),neuron_index=20)
 
 #decoded_final, encoded_final = SAEs[layer](batch[layer].to(device))
 #u.check_neuron(batch[layer].to(device).cpu(),decoded_final.detach().cpu(),neuron_index=15)
