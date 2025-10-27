@@ -11,7 +11,7 @@ import warnings
 warnings.filterwarnings("ignore", category=FutureWarning, message=".*torch.load.*")
 
 
-def check_dead_neurons(self, decoded, activation_data):
+def check_dead_neurons(self, decoded_final, activation_data):
     """
     I check with MSE diff which idx of neurons are dead
     """
@@ -29,6 +29,7 @@ def check_dead_neurons(self, decoded, activation_data):
     low_variability = std_per_neuron < low_var_threshold
     dead_indices = np.where(low_variability | bad_reconstruction)[0]
     print(f"Dead neurons: {dead_indices}")
+    return dead_indices
 
 
 def visualize_diagnostics(decoded):
@@ -80,5 +81,5 @@ for layer in possible_layers.layers:
 
 layer = possible_layers.layers[0]
 decoded_final, encoded_final = SAEs[layer](torch.stack(batch[layer], dim=0).to(device))
-u.check_neuron(torch.stack(batch[layer], dim=0).to(device).cpu(),decoded_final.detach().cpu(),neuron_index=29)
+u.check_neuron(torch.stack(batch[layer], dim=0).to(device).cpu(),decoded_final.detach().cpu(),neuron_index=28)
 

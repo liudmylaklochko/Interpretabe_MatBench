@@ -57,7 +57,7 @@ torch.cuda.manual_seed(torchseed)
 print("********  Loading activations  ********")
 
 data = torch.load(f'../activations_{model_name}/activations.pt')
-batch = data#['activations']
+batch = data['activations']
 possible_layers = pd.read_csv(f'../activations_{model_name}/non_empty_layers.txt')
 
 
@@ -89,9 +89,10 @@ for ep in range(0, config["nepochs_sae"]+1):
     sp = {} 
 
     for layer in possible_layers.layers:
-        
-        trainSAE(SAEs, optimizers, layer, torch.stack(batch[layer], dim=0).to(device), SAEev)
-        #trainSAE(SAEs, optimizers, layer, batch[layer].to(device), SAEev)
+        if model_name != 'ALIGNN':
+            trainSAE(SAEs, optimizers, layer, torch.stack(batch[layer], dim=0).to(device), SAEev)
+        else:
+            trainSAE(SAEs, optimizers, layer, batch[layer].to(device), SAEev)
         
         count = len (batch[layer])
 
@@ -145,7 +146,7 @@ torch.cuda.manual_seed(torchseed)
 print("********  Loading activations  ********")
 
 data = torch.load(f'../activations_{model_name}/activations.pt')
-batch = data#['activations']
+batch = data['activations']
 possible_layers = pd.read_csv(f'../activations_{model_name}/non_empty_layers.txt')
 
 SAEs = {}
