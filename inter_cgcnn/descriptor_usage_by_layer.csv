@@ -1,0 +1,9 @@
+descriptor,convs.0,convs.0.fc_full,convs.0.sigmoid,convs.0.softplus1,convs.0.bn1,convs.0.bn2,convs.0.softplus2,convs.1,convs.1.fc_full,convs.1.sigmoid,convs.1.softplus1,convs.1.bn1,convs.1.bn2,convs.1.softplus2,convs.2,convs.2.fc_full,convs.2.softplus1,convs.2.bn1,convs.2.bn2,convs.2.softplus2,convs.3,convs.3.fc_full,convs.3.sigmoid,convs.3.softplus1,convs.3.bn1,convs.3.softplus2,conv_to_fc
+includesElement__atomic_radius_rahm_max,0,50,156,0,0,0,0,0,0,185,0,0,0,0,0,0,0,0,0,0,0,0,189,0,0,0,0
+includesElement__electronegativity_allred-rochow_mean,0,0,0,48,0,2,0,12,0,160,0,0,1,3,0,41,24,0,0,0,0,0,0,7,0,0,0
+includesElement__electronegativity_gordy_max,7,0,1,1,0,0,15,2,0,0,1,1,0,1,1,3,1,1,1,0,0,0,0,33,0,0,0
+includesElement__electronegativity_nagle_std,2,0,0,26,0,0,6,0,29,0,0,0,0,3,64,0,2,0,1,21,8,11,0,38,2,7,23
+includesElement__electronegativity_pauling_max,6,0,0,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+includesElement__en_allen_max,11,0,0,14,1,0,7,0,42,3,0,0,1,1,3,0,29,0,0,3,0,0,0,52,0,0,0
+includesElement__group_id_max,18,0,188,6,0,0,14,0,108,16,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0
+includesElement__molar_heat_capacity_min,0,0,0,2,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
